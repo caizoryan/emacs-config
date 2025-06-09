@@ -1,5 +1,4 @@
 ;;; init.el --- Where all the magic begins
-
 (tool-bar-mode -1)
 (tooltip-mode -1)
 (scroll-bar-mode -1)
@@ -52,13 +51,11 @@
 	:hook
 	(js-mode . lsp))
 
-
 (defun proj ()
 	"Opens find-file in personal projects folder."
 	(interactive)
 	(let ((default-directory "~/Downloads/projects/"))
 		  (call-interactively 'find-file)))
-
 
 (let ((percent (/ (float (point))
 				  (float (point-max)))))
@@ -66,8 +63,6 @@
 			  (number-to-string
 			  (truncate (* percent 100)))
 			  "% through"))
-
-
 
 (use-package doom-modeline
   :ensure t
@@ -93,9 +88,7 @@
 (use-package flycheck) 
 (global-flycheck-mode)
 
-
 (use-package evil
-
   :init
   (setq evil-want-integration t)
   (setq evil-want-C-u-scroll t)
@@ -178,7 +171,7 @@
   (setq vterm-max-scrollback 10000))
 
 (add-hook 'dired-mode-hook 'dired-hide-details-mode)
-
+(add-hook 'dired-mode-hook 'dired-omit-mode)
 
 ;; Further reading: https://protesilaos.com/emacs/dotemacs#h:cff33514-d3ac-4c16-a889-ea39d7346dc5
 (use-package vertico
@@ -186,7 +179,6 @@
   (setq vertico-resize nil)
   (setq vertico-count 8)
   (vertico-mode 1))
-
 
 ;; Further reading: https://protesilaos.com/emacs/dotemacs#h:bd3f7a1d-a53d-4d3e-860e-25c5b35d8e7e
 (use-package marginalia
@@ -198,7 +190,6 @@
   :ensure t
   :config
   (setq completion-styles '(orderless basic)))
-
 ;;
 ;; Further reading: https://protesilaos.com/emacs/dotemacs#h:22e97b4c-d88d-4deb-9ab3-f80631f9ff1d
 (use-package consult
@@ -219,3 +210,27 @@
 
 (use-package magit)
 (use-package pbcopy)
+
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(css-indent-offset 2)
+ '(custom-safe-themes
+	 '("0c83e0b50946e39e237769ad368a08f2cd1c854ccbcd1a01d39fdce4d6f86478"
+		 default))
+ '(js-indent-level 2)
+ '(line-spacing 0.3))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
+
+
+(define-key evil-normal-state-map (kbd "<remap> <evil-next-line>") 'evil-next-visual-line)
+(define-key evil-normal-state-map (kbd "<remap> <evil-previous-line>") 'evil-previous-visual-line)
+(define-key evil-motion-state-map (kbd "<remap> <evil-next-line>") 'evil-next-visual-line)
+(define-key evil-motion-state-map (kbd "<remap> <evil-previous-line>") 'evil-previous-visual-line)
