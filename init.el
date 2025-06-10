@@ -49,20 +49,15 @@
 
 (use-package emacs
 	:hook
-	(js-mode . lsp))
+	(js-mode . lsp)
+  (prog-mode . hs-minor-mode)
+  (prog-mode . electric-pair-mode))
 
 (defun proj ()
 	"Opens find-file in personal projects folder."
 	(interactive)
 	(let ((default-directory "~/Downloads/projects/"))
 		  (call-interactively 'find-file)))
-
-(let ((percent (/ (float (point))
-				  (float (point-max)))))
-	  (concat "cursor is "
-			  (number-to-string
-			  (truncate (* percent 100)))
-			  "% through"))
 
 (use-package doom-modeline
   :ensure t
@@ -92,6 +87,7 @@
   :init
   (setq evil-want-integration t)
   (setq evil-want-C-u-scroll t)
+  (setq evil-shift-width 2)
 
   :config
   (evil-mode 1))
@@ -149,7 +145,8 @@
   :config
   (setq org-agenda-files
 	'("~/.config/emacs/org-files/tasks.org"
-	  "~/.config/emacs/org-files/birthdays.org"))
+	  "~/.config/emacs/org-files/birthdays.org"
+	  "~/notes/todo.org"))
   (setq org-agenda-start-with-log-mode t)
   (setq org-log-done 'time)
   (setq org-log-into-drawer t)
