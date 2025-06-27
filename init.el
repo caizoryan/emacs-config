@@ -45,13 +45,18 @@
 ;; so all general bindings are here lmao...
 (use-package command-log-mode
   :bind (("C-c t" . load-theme)
-	 ("C-c ." . eval-last-sexp)))
+				 ("C-c ." . eval-last-sexp)
+				 ("C-x C-b" . ibuffer)
+				 ("C-x f" . ffap)
+				 ))
 
 (use-package emacs
 	:hook
 	(js-mode . lsp)
   (prog-mode . hs-minor-mode)
-  (prog-mode . electric-pair-mode))
+  (prog-mode . electric-pair-mode)
+	(org-mode . visual-line-mode)
+	(org-mode . org-indent-mode))
 
 (defun proj ()
 	"Opens find-file in personal projects folder."
@@ -148,11 +153,9 @@
 	  "~/.config/emacs/org-files/birthdays.org"
 	  "~/notes/todo.org"))
   (setq org-agenda-start-with-log-mode t)
-  (setq org-log-done 'time)
+  (setq org-log-done 'nil)
   (setq org-log-into-drawer t)
-  (setq org-ellipsis " ▾"
-	org-hide-emphasis-markers t)
-  )
+  (setq org-ellipsis " ▾" org-hide-emphasis-markers t))
 
 (use-package org-bullets
     :hook (org-mode . org-bullets-mode))
@@ -192,6 +195,14 @@
 (use-package consult
 	:ensure t)
 
+(use-package projectile
+	:ensure t
+	:config (projectile-mode +1)
+	:bind (("C-x p F" . projectile-switch-project)
+				 ))
+
+(setq projectile-project-search-path '("~/Downloads/projects/"))
+
 (use-package spacious-padding)
 
 (setq spacious-padding-widths
@@ -218,7 +229,15 @@
 	 '("0c83e0b50946e39e237769ad368a08f2cd1c854ccbcd1a01d39fdce4d6f86478"
 		 default))
  '(js-indent-level 2)
- '(line-spacing 0.3))
+ '(line-spacing 0.3)
+ '(package-selected-packages
+	 '(command-log-mode company-box consult doom-modeline doom-themes
+											evil-collection flycheck general helpful
+											ivy-rich keycast lsp-mode magit marginalia
+											orderless org-bullets pbcopy projectile
+											rainbow-delimiters spacious-padding
+											typescript-mode vertico volatile-highlights
+											vterm which-key)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
