@@ -22,9 +22,12 @@
 (global-display-line-numbers-mode -1)
 (global-display-line-numbers-mode 1)
 
+
 (set-face-attribute 'default nil :height 160)
 (set-face-attribute 'default nil :font "FuraMono Nerd Font Mono")
 
+(setq mac-command-modifier 'meta)
+;; (global-set-key (kbd "S-d") nil)
 ;; Initialize package sources
 (require 'package)
 
@@ -41,6 +44,8 @@
 (require 'use-package)
 (setq use-package-always-ensure t)
 
+(global-set-key (kbd "M-d") nil)
+
 ;; don't know how to set bindings without pacakge
 ;; so all general bindings are here lmao...
 (use-package command-log-mode
@@ -48,7 +53,9 @@
 				 ("C-c ." . eval-last-sexp)
 				 ("C-x C-b" . ibuffer)
 				 ("C-x f" . ffap)
-				 ))
+				 ("C-x C-o" . find-file-other-window)
+				 ("C-c s" . consult-imenu)
+				 ("M-d" . evil-mc-make-and-goto-next-match)))
 
 (use-package emacs
 	:hook
@@ -64,10 +71,20 @@
 	(let ((default-directory "~/Downloads/projects/"))
 		  (call-interactively 'find-file)))
 
+;; MARKDOWN MODE
+(use-package markdown-mode
+  :ensure t
+  :mode ("README\\.md\\'" . gfm-mode)
+  :init (setq markdown-command "multimarkdown")
+  :bind (:map markdown-mode-map
+							("C-c C-e" . markdown-do)
+							("C-c l = =" . markdown-table-align)
+							))
+
 (use-package doom-modeline
   :ensure t
   :init (doom-modeline-mode 1)
-  :custom ((doom-modeline-height 25)
+  :custom ((doom-modeline-height 20)
 	   (doom-modeline-icon nil)
 	   (doom-modeline-lsp-icon nil)
 	   (doom-modeline-lsp nil)
@@ -114,14 +131,21 @@
   (efs/leader-keys
     ; Finding stuffy
     "f"  '(:ignore t :which-key "find")
-    "ff"  '(find-file :which-key "find files")
-    "fb"  '(switch-to-buffer :which-key "find buffer")
+    "ff"  '(project-find-file :which-key "find project files")
+    "fb"  '(consult-project-buffer :which-key "find project buffer")
+
+    "fF"  '(find-file :which-key "find files")
+    "fB"  '(switch-to-buffer :which-key "find buffer")
     ; killing windows and buffers
     "k"  '(:ignore t :which-key "kill")
     "kw"  '(evil-window-delete :which-key "kill window")
     "kb"  '(kill-buffer :which-key "kill buffer")))
 
 (setq-default tab-width 2)
+
+(use-package evil-mc
+	:init
+	(global-evil-mc-mode 1))
 
 (use-package lsp-mode
   :init
@@ -229,15 +253,15 @@
 	 '("0c83e0b50946e39e237769ad368a08f2cd1c854ccbcd1a01d39fdce4d6f86478"
 		 default))
  '(js-indent-level 2)
- '(line-spacing 0.3)
+ '(line-spacing 0.25)
  '(package-selected-packages
 	 '(command-log-mode company-box consult doom-modeline doom-themes
-											evil-collection flycheck general helpful
-											ivy-rich keycast lsp-mode magit marginalia
-											orderless org-bullets pbcopy projectile
-											rainbow-delimiters spacious-padding
-											typescript-mode vertico volatile-highlights
-											vterm which-key)))
+											evil-collection evil-mc flycheck general helpful
+											ivy-rich keycast lsp-mode lsp-scheme magit
+											marginalia multiple-cursors orderless
+											org-bullets pbcopy projectile rainbow-delimiters
+											spacious-padding typescript-mode vertico
+											volatile-highlights vterm which-key)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
