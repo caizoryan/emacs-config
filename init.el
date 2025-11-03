@@ -14,7 +14,7 @@
 ;; (load-theme 'doom-flatwhite)
 
 (setq-default flycheck-disabled-checkers '(emacs-lisp-checkdoc))
-
+(setf make-backup-files nil)
 (menu-bar-mode 1)
 (load-theme 'tango-dark)
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
@@ -23,8 +23,12 @@
 (global-display-line-numbers-mode 1)
 
 
-(set-face-attribute 'default nil :height 160)
 (set-face-attribute 'default nil :font "FuraMono Nerd Font Mono")
+(set-face-attribute 'default nil :height 160)
+
+(setq auto-save-file-name-transforms
+          `((".*" ,(concat user-emacs-directory "auto-save/") t))) 
+
 
 (setq mac-command-modifier 'meta)
 ;; (global-set-key (kbd "S-d") nil)
@@ -45,25 +49,46 @@
 (setq use-package-always-ensure t)
 
 (global-set-key (kbd "M-d") nil)
+(global-set-key (kbd "M-D") nil)
+
+
+(use-package command-log-mode)
+
+(defun kill-current-buffer ()
+	(interactive)
+	(kill-buffer (current-buffer)))
+
+(defun server (port)
+	(interactive "sPort: ")
+	(async-shell-command
+	 (concat "python3 -m http.server " port)
+	 (generate-new-buffer
+		(concat "*(server" port ")*"))))
 
 ;; don't know how to set bindings without pacakge
 ;; so all general bindings are here lmao...
-(use-package command-log-mode
-  :bind (("C-c t" . load-theme)
-				 ("C-c ." . eval-last-sexp)
-				 ("C-x C-b" . ibuffer)
-				 ("C-x f" . ffap)
-				 ("C-x C-o" . find-file-other-window)
-				 ("C-c s" . consult-imenu)
-				 ("M-d" . evil-mc-make-and-goto-next-match)))
-
 (use-package emacs
 	:hook
 	(js-mode . lsp)
   (prog-mode . hs-minor-mode)
   (prog-mode . electric-pair-mode)
 	(org-mode . visual-line-mode)
-	(org-mode . org-indent-mode))
+	(org-mode . org-indent-mode)
+
+	:bind (("C-c t" . load-theme)
+					("C-c ." . eval-last-sexp)
+					("C-x C-b" . ibuffer)
+					("C-x f" . ffap)
+					("C-x C-o" . find-file-other-window)
+					("C-c s" . consult-imenu)
+					("M-d" . evil-mc-make-and-goto-next-match)
+					("M-D" . evil-mc-undo-all-cursors)
+					("M-u" . evil-mc-undo-last-added-cursor)
+					("M--" . text-scale-decrease)
+					("M-=" . text-scale-increase)
+					("M-w" . kill-current-buffer)
+					("M-p" . project-switch-project))
+	)
 
 (defun proj ()
 	"Opens find-file in personal projects folder."
@@ -79,6 +104,8 @@
   :bind (:map markdown-mode-map
 							("C-c C-e" . markdown-do)
 							("C-c l = =" . markdown-table-align)
+							("M-<up>" . markdown-move-up)
+							("M-<down>" . markdown-move-down)
 							))
 
 (use-package doom-modeline
@@ -253,7 +280,7 @@
 	 '("0c83e0b50946e39e237769ad368a08f2cd1c854ccbcd1a01d39fdce4d6f86478"
 		 default))
  '(js-indent-level 2)
- '(line-spacing 0.25)
+ '(line-spacing 0.3)
  '(package-selected-packages
 	 '(command-log-mode company-box consult doom-modeline doom-themes
 											evil-collection evil-mc flycheck general helpful
@@ -262,15 +289,27 @@
 											org-bullets pbcopy projectile rainbow-delimiters
 											spacious-padding typescript-mode vertico
 											volatile-highlights vterm which-key)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
 
 
 (define-key evil-normal-state-map (kbd "<remap> <evil-next-line>") 'evil-next-visual-line)
 (define-key evil-normal-state-map (kbd "<remap> <evil-previous-line>") 'evil-previous-visual-line)
 (define-key evil-motion-state-map (kbd "<remap> <evil-next-line>") 'evil-next-visual-line)
 (define-key evil-motion-state-map (kbd "<remap> <evil-previous-line>") 'evil-previous-visual-line)
+
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(markdown-code-face ((t (:inherit fixed-pitch))))
+ '(markdown-header-face ((t (:inherit font-lock-function-name-face :weight thin :family "CirrusCumulus"))))
+ '(markdown-header-face-1 ((t (:inherit markdown-header-face :height 2.8))))
+ '(markdown-header-face-2 ((t (:inherit markdown-header-face :height 2.5))))
+ '(markdown-header-face-3 ((t (:inherit markdown-header-face :height 2.3))))
+ '(markdown-header-face-4 ((t (:inherit markdown-header-face :height 2.0))))
+ '(markdown-header-face-5 ((t (:inherit markdown-header-face :height 1.8))))
+ '(markdown-link-face ((t (:inherit link :background "wheat1" :foreground "black"))))
+ '(markdown-list-face ((t (:inherit markdown-markup-face :family "Hermit"))))
+ '(markdown-markup-face ((t (:inherit shadow :slant normal :weight normal :family "PP Fraktion Mono"))))
+ '(markdown-table-face ((t (:inherit markdown-code-face :family "RobotoMono Nerd Font Mono"))))
+ '(variable-pitch ((t (:family "ABC Oracle Book Unlicensed Trial")))))
