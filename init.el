@@ -29,6 +29,7 @@
 (setq auto-save-file-name-transforms
           `((".*" ,(concat user-emacs-directory "auto-save/") t))) 
 
+(setq auto-save-default nil)
 
 (setq mac-command-modifier 'meta)
 ;; (global-set-key (kbd "S-d") nil)
@@ -53,17 +54,101 @@
 
 
 (use-package command-log-mode)
+(use-package dired-filter)
+
+(use-package request)
+
+;; (request "https://api.are.na/v2/channels/list-are-na-api-possibilities?per=100"
+;; 	:parser 'json-read
+;; 	:success (cl-function
+;; 						(lambda (&key data &allow-other-keys)
+;; 						(let (temp-buffer count)
+;; 							(setq count 0)
+;; 							(setq temp-buffer (if-let
+;; 														((buffer (get-buffer  "BUFFER")))
+;; 														(switch-to-buffer buffer)
+;; 													(generate-new-buffer "BUFFER")))
+;; 							(switch-to-buffer "BUFFER")
+;; 							(delete-region (point-min) (point-max))
+;; 							(princ (format "id: %S" (alist-get 'id data)) temp-buffer)
+;; 							(princ "\n" temp-buffer)
+;; 							(princ (format "slug: %S" (alist-get 'slug data)) temp-buffer)
+;; 							(princ "\n" temp-buffer)
+;; 							(seq-doseq (x (alist-get 'contents data))
+;; 								(setq count (+ count 1))
+;; 								(if (< count 3)
+;; 										(posframe-show-string (alist-get 'content x) (cons 50 (* count 30))))
+;; 								(princ (format "b[id]: %S" (alist-get 'id x)) temp-buffer)
+;; 								(princ "\n" temp-buffer)
+;; 								)
+
+;; 							(princ (format "length: %d" count) temp-buffer)
+;; 							)))) 
+
+;; (json-parse-string "[{\"hello\": \"hello\"}, {\"world\": \"world\"}]")
+
+(use-package posframe)
+
+(defun tasks ()
+	(interactive)
+
+	(let (dawg lineNum)
+		(setq dawg (if-let
+									 ((buffer (get-buffer  "*TASKS*")))
+									 (switch-to-buffer buffer)
+								 (generate-new-buffer "*TASKS*")))
+
+		(setq lineNum 0)
+
+		(dolist (line (split-string
+									 (buffer-substring-no-properties
+										(point-min)
+										(point-max)) "\n"))
+
+		(setq lineNum (+ lineNum 1))
+
+		(cond ((string-match-p (regexp-quote "- \[ ]") line)
+					 (princ (concat (number-to-string lineNum) ": " line) dawg)
+					 (princ "\n" dawg)))
+		)
+	(display-buffer dawg)))
+
+(defun posframe-show-string (str &optional pos)
+	(interactive "sEnter to show:")
+	(message str)
+	(posframe-show " *my-posframe-buffer*"
+                 :string str
+								 :width 40
+								 :height 20
+								 :border-width 2
+								 :border-color "red"
+                 :position (if (eq pos nil) (point) (progn (message "using pos") pos))
+								 ))
+
+
+(defun posframe-show-buffer (buffer)
+	(posframe-show buffer
+								 :width 50
+								 :height 15 
+								 :border-width 2
+								 :border-color "red"
+                 :position (point)))
 
 (defun kill-current-buffer ()
 	(interactive)
-	(kill-buffer (current-buffer)))
+	(evil-window-delete))
 
 (defun server (port)
 	(interactive "sPort: ")
 	(async-shell-command
 	 (concat "python3 -m http.server " port)
 	 (generate-new-buffer
-		(concat "*(server" port ")*"))))
+		(concat "*(server" port ")*"))
+	 (browse-url (concat  "http://localhost:" port))
+	 ))
+
+
+(use-package pdf-tools)
 
 ;; don't know how to set bindings without pacakge
 ;; so all general bindings are here lmao...
@@ -82,13 +167,47 @@
 					("C-x C-o" . find-file-other-window)
 					("C-c s" . consult-imenu)
 					("M-d" . evil-mc-make-and-goto-next-match)
+					("M-f" . find-file)
 					("M-D" . evil-mc-undo-all-cursors)
 					("M-u" . evil-mc-undo-last-added-cursor)
 					("M--" . text-scale-decrease)
 					("M-=" . text-scale-increase)
 					("M-w" . kill-current-buffer)
-					("M-p" . project-switch-project))
+
+					("M-l" . evil-window-right)
+					("M-h" . evil-window-left)
+					("M-j" . evil-window-down)
+					("M-k" . evil-window-top)
+					("M-/" . evil-window-split)
+					("M-|" . evil-window-vsplit))
 	)
+
+(defun center-window ()
+	(interactive)
+  (let ((margin-size (/ (- (frame-width) 70) 2)))
+    (set-window-margins nil margin-size margin-size)))
+
+(defun writing-mode ()
+	(interactive)
+	(center-window)
+	(visual-line-mode)
+	(display-line-numbers-mode)
+	(variable-pitch-mode))
+	
+(defun reset-margins ()
+	(interactive)
+	(set-window-margins nil 0 0))
+
+(defun search-style-css ()
+	(interactive)
+	(let (buf))
+	(setq buf (buffer-substring-no-properties (region-beginning) (region-end)))
+	(dolist (x (projectile-project-buffers))
+		(if (string-match-p (regexp-quote "style.css") (buffer-file-name x))
+				(progn
+					(switch-to-buffer-other-window x)
+					(consult-line buf))
+			)))
 
 (defun proj ()
 	"Opens find-file in personal projects folder."
@@ -96,22 +215,28 @@
 	(let ((default-directory "~/Downloads/projects/"))
 		  (call-interactively 'find-file)))
 
+(use-package geiser :ensure t)
+(use-package geiser-racket :ensure t)
+
+
 ;; MARKDOWN MODE
 (use-package markdown-mode
   :ensure t
   :mode ("README\\.md\\'" . gfm-mode)
   :init (setq markdown-command "multimarkdown")
   :bind (:map markdown-mode-map
-							("C-c C-e" . markdown-do)
+							("M-RET" . markdown-do)
 							("C-c l = =" . markdown-table-align)
 							("M-<up>" . markdown-move-up)
 							("M-<down>" . markdown-move-down)
+							("M-p" . projectile-switch-project)
 							))
 
 (use-package doom-modeline
   :ensure t
   :init (doom-modeline-mode 1)
-  :custom ((doom-modeline-height 20)
+  :custom (
+					 (doom-modeline-height 25)
 	   (doom-modeline-icon nil)
 	   (doom-modeline-lsp-icon nil)
 	   (doom-modeline-lsp nil)
@@ -178,7 +303,10 @@
   :init
   (setq lsp-keymap-prefix "C-c l")
   :config
-  (lsp-enable-which-key-integration t))
+  (lsp-enable-which-key-integration t)
+
+	:bind (("M-r" . lsp-find-references))
+	)
 
 (defun efs/lsp-mode-setup ()
   (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
@@ -250,20 +378,15 @@
 	:ensure t
 	:config (projectile-mode +1)
 	:bind (("C-x p F" . projectile-switch-project)
-				 ))
+				 ("M-p" . projectile-switch-project)))
 
 (setq projectile-project-search-path '("~/Downloads/projects/"))
 
 (use-package spacious-padding)
 
 (setq spacious-padding-widths
-		'( :internal-border-width 12
-				:header-line-width 4
-				:mode-line-width 6
-				:tab-width 2
-				:right-divider-width 20
-				:scroll-bar-width 2
-				:fringe-width 22))
+		'(  :right-divider-width 20
+				:fringe-width 44))
 
 (spacious-padding-mode 1)
 
@@ -282,11 +405,13 @@
  '(js-indent-level 2)
  '(line-spacing 0.3)
  '(package-selected-packages
-	 '(command-log-mode company-box consult doom-modeline doom-themes
-											evil-collection evil-mc flycheck general helpful
+	 '(command-log-mode company-box consult dired-filter doom-modeline
+											doom-themes evil-collection evil-mc flycheck
+											geiser geiser-mit geiser-racket general helpful
 											ivy-rich keycast lsp-mode lsp-scheme magit
 											marginalia multiple-cursors orderless
-											org-bullets pbcopy projectile rainbow-delimiters
+											org-bullets parinfer-rust-mode pbcopy pdf-tools
+											posframe projectile rainbow-delimiters request
 											spacious-padding typescript-mode vertico
 											volatile-highlights vterm which-key)))
 
@@ -302,7 +427,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(markdown-code-face ((t (:inherit fixed-pitch))))
- '(markdown-header-face ((t (:inherit font-lock-function-name-face :weight thin :family "CirrusCumulus"))))
+ '(markdown-header-face ((t (:inherit font-lock-function-name-face :background "#f1ddf1" :foreground "#614c61" :weight thin :family "Gap Sans"))))
  '(markdown-header-face-1 ((t (:inherit markdown-header-face :height 2.8))))
  '(markdown-header-face-2 ((t (:inherit markdown-header-face :height 2.5))))
  '(markdown-header-face-3 ((t (:inherit markdown-header-face :height 2.3))))
@@ -312,4 +437,5 @@
  '(markdown-list-face ((t (:inherit markdown-markup-face :family "Hermit"))))
  '(markdown-markup-face ((t (:inherit shadow :slant normal :weight normal :family "PP Fraktion Mono"))))
  '(markdown-table-face ((t (:inherit markdown-code-face :family "RobotoMono Nerd Font Mono"))))
- '(variable-pitch ((t (:family "ABC Oracle Book Unlicensed Trial")))))
+ '(variable-pitch ((t (:family "ABC Camera Plain Variable Unlicensed Trial"))))
+ '(variable-pitch-text ((t (:inherit variable-pitch :height 1.05)))))
