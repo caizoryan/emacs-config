@@ -35,7 +35,6 @@
 ;; (global-set-key (kbd "S-d") nil)
 ;; Initialize package sources
 (require 'package)
-
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                          ("org" . "https://orgmode.org/elpa/")
                          ("elpa" . "https://elpa.gnu.org/packages/")))
@@ -312,6 +311,29 @@
   (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
   (lsp-headerline-breadcrumb-mode))
 
+(use-package corfu
+  :general
+  (:keymaps 'corfu-map
+            :states 'insert
+            "C-n" #'corfu-next
+            "C-p" #'corfu-previous
+            "<escape>" #'corfu-quit
+            "<return>" #'corfu-insert)
+  :custom
+	(corfu-auto t) ; Only use `corfu' when calling `completion-at-point' or
+									
+	(corfu-auto-prefix 2)
+	(corfu-auto-delay 0.25)
+
+	(corfu-min-width 80)
+	(corfu-max-width corfu-min-width)       ; Always have the same width
+	(corfu-count 14)
+	(corfu-scroll-margin 4)
+	(corfu-cycle nil)
+	
+	:init
+  (global-corfu-mode))
+
 (use-package company
   :after lsp-mode
   :hook (lsp-mode . company-mode)
@@ -322,6 +344,7 @@
   :custom
   (company-minimum-prefix-length 1)
   (company-idle-delay 0.0))
+
 
 (use-package doom-themes)
 
@@ -339,8 +362,8 @@
 (use-package org-bullets
     :hook (org-mode . org-bullets-mode))
 
-(use-package company-box
-  :hook (company-mode . company-box-mode))
+;; (use-package company-box
+;;   :hook (company-mode . company-box-mode))
 
 (use-package vterm
   :commands vterm
@@ -374,6 +397,9 @@
 (use-package consult
 	:ensure t)
 
+(use-package swiper
+	:ensure t)
+
 (use-package projectile
 	:ensure t
 	:config (projectile-mode +1)
@@ -405,15 +431,14 @@
  '(js-indent-level 2)
  '(line-spacing 0.3)
  '(package-selected-packages
-	 '(command-log-mode company-box consult dired-filter doom-modeline
-											doom-themes evil-collection evil-mc flycheck
-											geiser geiser-mit geiser-racket general helpful
-											ivy-rich keycast lsp-mode lsp-scheme magit
-											marginalia multiple-cursors orderless
-											org-bullets parinfer-rust-mode pbcopy pdf-tools
-											posframe projectile rainbow-delimiters request
-											spacious-padding typescript-mode vertico
-											volatile-highlights vterm which-key)))
+	 '(cape command-log-mode consult corfu dired-filter doom-modeline
+					doom-themes evil-collection evil-mc flycheck geiser
+					geiser-mit geiser-racket general helpful ivy keycast
+					lsp-mode lsp-scheme magit marginalia multiple-cursors
+					orderless org-bullets parinfer-rust-mode pbcopy pdf-tools
+					posframe projectile rainbow-delimiters request
+					spacious-padding swiper typescript-mode vertico
+					volatile-highlights vterm which-key)))
 
 
 (define-key evil-normal-state-map (kbd "<remap> <evil-next-line>") 'evil-next-visual-line)
